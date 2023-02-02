@@ -3,12 +3,8 @@
 
     <mat-stepper labelPosition="bottom" linear #stepper>
         <mat-step>
-          <form class="p-5 border border-dark rounded mt-3">
+          <form class="p-3 p-md-5 border border-dark rounded mt-3">
             <ng-template matStepLabel>Input Detail</ng-template>
-            <!-- <mat-form-field appearance="fill">
-              <mat-label>Name</mat-label>
-              <input matInput placeholder="Last name, First name" formControlName="firstCtrl" required>
-            </mat-form-field> -->
             <div class="h5 border-bottom border-secondary mb-3 fw-bold pb-2">1. Tax Filing Detail</div>
             <div class="mb-2">Type of filing <span class="text-danger">*</span></div>
             <div class="form-check form-check-inline mb-3">
@@ -24,11 +20,12 @@
                     <div class="mb-2">VAT Month <span class="text-danger">*</span></div>
                     <div class="row mb-3">
                         <div class="col-6">
-                            <select class="form-select" [ngClass]="{'is-invalid': isNext && taxData.month===''}" aria-label="Month select" name="month" [(ngModel)]="taxData.month">
+                            <select class="form-select" [ngClass]="{'is-invalid': isNext && (taxData.month==='' || invalidMonth())}" aria-label="Month select" name="month" [(ngModel)]="taxData.month">
                                 <option class="text-muted" value="" selected>Select month</option>
                                 <option [value]="item.value" *ngFor="let item of monthList">{{ item.name }}</option>
                             </select>
                             <span class="small text-danger" *ngIf="isNext && taxData.month===''">Required</span>
+                            <span class="small text-danger" *ngIf="isNext && taxData.month!=='' && invalidMonth()">Cannot select month after current month</span>
                         </div>
                         <div class="col-6">
                             <select class="form-select" [ngClass]="{'is-invalid': isNext && taxData.year===''}" aria-label="Year select" name="year" [(ngModel)]="taxData.year">
@@ -51,7 +48,7 @@
                     </div>
                 </div>
             </div>
-            <div class="border-bottom border-secondary my-3 d-flex justify-content-between pb-2">
+            <div class="border-bottom border-secondary my-3 d-flex flex-column flex-md-row justify-content-md-between pb-2">
                 <div class="h5 fw-bold mb-0">2. Tax Computation</div>
                 <u>View Exchange Rate</u>
             </div>
@@ -60,7 +57,7 @@
             <div class="row">
                 <div class="col-12 col-md-8 mb-3" *ngIf="taxData.filingType === '0'">1. Total value of taxable electronic service exclusive of VAT</div>
                 <div class="col-12 col-md-8 mb-3" *ngIf="taxData.filingType === '1'">1. Underdeclared Thai taxable electronic service</div>
-                <div class="col-6 col-md-4 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <div class="input-group" [ngClass]="{'is-invalid': isNext && (taxData.saleAmount === 0 || !taxData.saleAmount)}">
                         <input type="number" class="form-control text-end" aria-label="Sale Amount" aria-describedby="sale-amount" name="saleAmount" [(ngModel)]="taxData.saleAmount" (ngModelChange)="onSaleAmountChange()">
                         <span class="input-group-text" id="sale-amount">THB</span>
@@ -70,12 +67,13 @@
             </div>
             <div class="row">
                 <div class="col-12 col-md-8 mb-3">2. Total VAT to be remitted (7% of 1.)</div>
-                <div class="col-6 col-md-4 mb-3">
-                    <div class="input-group" [ngClass]="{'is-invalid': isNext && isInvalidTaxAmount()}">
+                <div class="col-12 col-md-4 mb-3">
+                    <div class="input-group" [ngClass]="{'is-invalid': (isNext && (taxData.taxAmount === 0 || !taxData.taxAmount)) || isInvalidTaxAmount()}">
                         <input type="number" class="form-control text-end" aria-label="Tax Amount" aria-describedby="tax-amount" name="taxAmount" [(ngModel)]="taxData.taxAmount" (ngModelChange)="onTaxAmountChange()">
                         <span class="input-group-text" id="tax-amount">THB</span>
                     </div>
-                    <span class="small text-danger" *ngIf="isNext && isInvalidTaxAmount()">Invalid Tax</span>
+                    <span class="small text-danger" *ngIf="isInvalidTaxAmount()">Invalid Tax</span>
+                    <span class="small text-danger" *ngIf="isNext && (taxData.taxAmount === 0 || !taxData.taxAmount)">Required</span>
                 </div>
             </div>
             <div *ngIf="taxData.filingType === '1'">
@@ -83,7 +81,7 @@
 
                 <div class="row">
                     <div class="col-12 col-md-8 mb-3">3. Surcharge <i class="bi bi-question-circle-fill"></i></div>
-                    <div class="col-6 col-md-4 mb-3">
+                    <div class="col-12 col-md-4 mb-3">
                         <div class="input-group disabled">
                             <input type="number" class="form-control text-end" aria-label="Surcharge" aria-describedby="surcharge" name="surcharge" [(ngModel)]="taxData.surcharge" disabled>
                             <span class="input-group-text" id="surcharge">THB</span>
@@ -92,7 +90,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12 col-md-8 mb-3">4. Penalty <i class="bi bi-question-circle-fill"></i></div>
-                    <div class="col-6 col-md-4 mb-3">
+                    <div class="col-12 col-md-4 mb-3">
                         <div class="input-group disabled">
                             <input type="number" class="form-control text-end" aria-label="Penalty" aria-describedby="penalty" name="penalty" [(ngModel)]="taxData.penalty" disabled>
                             <span class="input-group-text" id="penalty">THB</span>
@@ -101,7 +99,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12 col-md-8 mb-3">Total amount of VAT, surcharge and penalty to be remitted (2.+3.+4.)</div>
-                    <div class="col-6 col-md-4 mb-3">
+                    <div class="col-12 col-md-4 mb-3">
                         <div class="input-group disabled">
                             <input type="number" class="form-control text-end" aria-label="Total Amount" aria-describedby="total-amount" name="totalAmount" [(ngModel)]="taxData.totalAmount" disabled>
                             <span class="input-group-text" id="total-amount">THB</span>
@@ -117,35 +115,38 @@
           </form>
         </mat-step>
         <mat-step>
-          <form class="p-5 border border-dark rounded mt-3">
+          <form class="p-3 p-md-5 border border-dark rounded mt-3">
             <ng-template matStepLabel>Review & Confirm</ng-template>
             <div class="h5 border-bottom border-secondary mb-3 fw-bold pb-2">Tax Filing Detail</div>
             <div class="row">
-                <div class="col-12 col-md-3 mb-2">Type of filing</div>
+                <div class="col-12 col-md-3 mb-2 fw-semibold">Type of filing</div>
                 <div class="col-12 col-md-8 mb-2">{{ getFilingType() }}</div>
             </div>
             <div class="row">
-                <div class="col-12 col-md-3 mb-2">VAT Month</div>
+                <div class="col-12 col-md-3 mb-2 fw-semibold">VAT Month</div>
                 <div class="col-12 col-md-8 mb-2">{{ getSelectedMonth() }} {{ taxData.year }}</div>
             </div>
 
             <div class="h5 border-bottom border-secondary my-3 fw-bold pb-2">Tax Computation</div>
             <div class="row">
-                <div class="col-12 col-md-8 mb-3">Total value of taxable electronic service exclusive of VAT</div>
-                <div class="col-12 col-md-4 mb-3">{{ taxData.saleAmount }}</div>
+                <div class="col-12 col-md-8 mb-3 fw-semibold">Total value of taxable electronic service exclusive of VAT</div>
+                <div class="col-12 col-md-4 mb-3">{{ taxData.saleAmount | number : '1.2-2' }} THB</div>
             </div>
             <div class="row">
                 <div class="col-12 col-md-8 mb-3">
-                    <div>Total VAT to be remitted</div>
+                    <div class="fw-semibold">Total VAT to be remitted</div>
                     <small class="text-muted">(7% of Total value of taxable electronic service exclusive of VAT)</small>
                 </div>
-                <div class="col-12 col-md-4 mb-3">{{ taxData.taxAmount }}</div>
+                <div class="col-12 col-md-4 mb-3">{{ taxData.taxAmount | number : '1.2-2' }} THB</div>
             </div>
             <div class="row">
-                <div class="col-12 col-md-8 mb-3">Total Amount Payable</div>
-                <div class="col-12 col-md-4 mb-3">{{ taxData.totalAmount }}</div>
+                <div class="col-12 col-md-8 mb-3 fw-semibold">Total Amount Payable</div>
+                <div class="col-12 col-md-4 mb-3 fw-semibold">{{ taxData.totalAmount | number : '1.2-2' }} THB</div>
             </div>
-            <div>
+
+            <div class="h5 border-bottom border-secondary my-3 fw-bold pb-2">Declaration</div>
+            <p>I hereby certify that information given above are true and correct and agree to be bound by such information</p>
+            <div class="mt-3">
               <button class="btn btn-outline-dark" (click)="goBack(stepper)">Back</button>
               <button class="btn btn-dark ms-3" (click)="submit()">Confirm and Submit</button>
             </div>

@@ -34,7 +34,7 @@ export class FormTaxComponent implements OnInit {
     saleAmount: 0,
     taxAmount: 0,
     surcharge: 0,
-    penalty: 200,
+    penalty: 0,
     totalAmount: 0
   }
   modal: any;
@@ -43,15 +43,17 @@ export class FormTaxComponent implements OnInit {
   confirmBtnText: string = "";
   cancelBtnText: string = "";
   modalType: string = "";
+  currentMonth: any;
+  currentYear: any;
 
   constructor(private cdRef: ChangeDetectorRef) {
   }
 
   ngOnInit() {
     const d = new Date();
-    let currentMonth = d.getMonth();
-    let currentYear = d.getFullYear();
-    for(let i=2020; i<=currentYear; i++) {
+    this.currentMonth = d.getMonth()+1;
+    this.currentYear = d.getFullYear();
+    for(let i = 2020; i <= this.currentYear; i++) {
       this.yearList.push(i.toString())
     }
     console.log(this.yearList)
@@ -60,27 +62,32 @@ export class FormTaxComponent implements OnInit {
   onfilingTypeChange() {
     if(this.taxData.filingType === "1") {
       this.taxData.penalty = 200;
+      this.calTotal();
     } else {
       this.taxData.surcharge = 0;
       this.taxData.penalty = 0;
+      this.calTotal();
     }
     this.cdRef.detectChanges();
   }
 
   onSaleAmountChange() {
-    this.taxData.saleAmount.toFixed(2);
     this.taxAmountCal = Number((this.taxData.saleAmount * 0.07).toFixed(2));
     this.taxData.taxAmount = this.taxAmountCal;
-    this.taxData.surcharge = Number((this.taxData.taxAmount * 0.1).toFixed(2));
-    this.taxData.totalAmount = Number((this.taxData.taxAmount + this.taxData.surcharge + this.taxData.penalty).toFixed(2));
     this.cdRef.detectChanges();
+    this.calTotal();
   }
 
   onTaxAmountChange() {
     if((this.taxData.saleAmount && this.taxData.saleAmount > 0) && (!this.taxData.taxAmount || this.taxData.taxAmount === 0)) {
       this.taxData.taxAmount = this.taxAmountCal;
     }
-    this.taxData.surcharge = Number((this.taxData.taxAmount * 0.1).toFixed(2));
+    this.cdRef.detectChanges();
+    this.calTotal();
+  }
+
+  calTotal() {
+    this.taxData.surcharge = this.taxData.filingType === "1" ? Number((this.taxData.taxAmount * 0.1).toFixed(2)): 0;
     this.taxData.totalAmount = Number((this.taxData.taxAmount + this.taxData.surcharge + this.taxData.penalty).toFixed(2));
     this.cdRef.detectChanges();
   }
@@ -90,10 +97,18 @@ export class FormTaxComponent implements OnInit {
   }
   
   validate() {
-    if(this.taxData.month === "" || this.taxData.year === "" || this.taxData.saleAmount === 0 || this.taxData.taxAmount === 0) {
+    if(this.taxData.month === "" || this.taxData.year === "" || this.taxData.saleAmount === 0 || this.taxData.taxAmount === 0 || this.invalidMonth() || this.isInvalidTaxAmount()) {
       return false;
     } else {
       return true;
+    }
+  }
+
+  invalidMonth() {
+    if(Number(this.taxData.month) > this.currentMonth && Number(this.taxData.year) >= this.currentYear) {
+      return true;
+    } else {
+      return false;
     }
   }
 

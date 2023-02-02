@@ -2,6 +2,12 @@
     pointer-events: none !important;
 }
 
+::ng-deep.mat-horizontal-stepper-header-container {
+    width: 80% !important;
+    margin-right: auto!important;
+    margin-left: auto!important;
+}
+
 .mat-step-header.cdk-keyboard-focused, .mat-step-header.cdk-program-focused, .mat-step-header:hover:not([aria-disabled]), .mat-step-header:hover[aria-disabled=false] {
     background-color: none !important;
 }
