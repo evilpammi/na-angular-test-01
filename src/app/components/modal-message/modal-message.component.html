@@ -1,0 +1,14 @@
+<div class="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" id="modal_message" aria-labelledby="modal_message" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+              <h5 class="mb-3">{{ title }}</h5>
+              <pre>{{ text }}</pre>
+              <div class="d-flex justify-content-end mt-3">
+                  <button type="button" class="btn btn-sm btn-outline-dark me-2" (click)="handleCancel()" data-bs-dismiss="modal" *ngIf="cancelBtnText !== ''">{{ cancelBtnText }}</button>
+                  <button type="button" class="btn btn-sm btn-dark" (click)="handleConfirm()">{{ confirmBtnText }}</button>
+              </div>
+            </div>
+        </div>
+    </div>
+  </div>
